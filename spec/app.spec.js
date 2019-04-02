@@ -9,8 +9,15 @@ const connection = require('../db/connection');
 const request = supertest(app);
 
 describe('/', () => {
-  // beforeEach(() => connection.seed.run());
-  after(() => connection.destroy());
+  beforeEach(() =>
+    connection.migrate
+      .rollback()
+      .then(() => connection.migrate.latest())
+      .then(() => connection.seed.run())
+  );
+  after(() => {
+    connection.destroy();
+  });
 
   describe('/api', () => {
     it('GET status:200', () => {

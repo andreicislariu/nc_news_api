@@ -1,7 +1,7 @@
 const express = require('express');
 const apiRouter = require('./routes/api');
 const { routeNotFound, handle500 } = require('./errors');
-
+const { bodyParser } = require('body-parser');
 const app = express();
 
 app.use(express.json());
