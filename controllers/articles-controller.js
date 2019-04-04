@@ -1,12 +1,31 @@
 const connection = require('../db/connection');
 
 exports.getAllArticles = (req, res, next) => {
-  connection('articles')
-    .select('*')
-    .then(articles => {
-      res.send({ articles });
-    })
-    .catch(next);
+  const { author, topic, sort_by = 'created_at', order = 'desc' } = req.query;
+  return (
+    connection('articles')
+      .select(
+        'articles.author',
+        'articles.title',
+        'articles.article_id',
+        'articles.body',
+        'articles.votes',
+        'articles.created_at',
+        'articles.topic'
+      )
+      .leftJoin('comments', 'articles.article_id', '=', 'comments.article_id')
+      .count('comments as comment_count')
+      // .modify(query => {
+      //   if (author) query.where({ 'articles.author': author });
+      //   if (topic) query.where({ topic });
+      // })
+      .groupBy('articles.article_id', 'articles.author')
+      .orderBy(sort_by, order ? 'asc' : 'desc')
+      .then(articles => {
+        res.status(200).send({ articles });
+      })
+      .catch(next)
+  );
 };
 
 exports.getArticleById = (req, res, next) => {
@@ -26,7 +45,7 @@ exports.getArticleById = (req, res, next) => {
     .where('articles.article_id', '=', article_id)
     .groupBy('articles.article_id', 'articles.author')
     .then(article => {
-      if (!article) next({ status: 404 });
+      if (article.length === 0) next({ status: 404 });
       else res.send({ article });
     })
     .catch(next);
@@ -38,7 +57,7 @@ exports.patchArticleWithVotes = (req, res, next) => {
   const { article_id } = req.params;
   return connection('articles')
     .select('*')
-    .where('article_id', article_id)
+    .where('article_id', `${article_id}`)
     .modify(articleQuery => {
       if (inc_votes >= 0) articleQuery.increment('votes', inc_votes);
       else articleQuery.decrement('votes', Math.abs(inc_votes));
@@ -53,21 +72,22 @@ exports.patchArticleWithVotes = (req, res, next) => {
     .catch(next);
 };
 
+//not working yet
 exports.deleteArticleByArticle_id = (req, res, next) => {
+  // deleteArticle(req.params['article_id']);
   const { article_id } = req.params;
-  connection('articles')
+  console.log(article_id);
+  return connection('articles')
     .select('*')
-    .where('articles.article_id', '=', `${article_id}`)
+    .where({ 'articles.article_id': article_id })
     .del()
-    .returning('*')
-    .then(article => {
-      if (article.length === 0) {
-        return Promise.reject({
-          status: 404,
-          message: 'Page not found'
-        });
+    .then(err => {
+      if (!err) next({ status: 404 });
+      else {
+        return res
+          .status(204)
+          .send(`Article ${req.params['article_id']} has been deleted`);
       }
-      return res.status(204).send({});
     })
     .catch(next);
 };
