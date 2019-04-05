@@ -10,6 +10,9 @@
     "migrate-rollback": "knex migrate:rollback",
     "test": "mocha ./spec/*.spec.js",
     "seed": "knex seed:run",
+    "seed:prod": "NODE_ENV=production DATABASE_URL=$(heroku config:get DATABASE_URL) knex seed:run",
+    "migrate:latest:prod": "NODE_ENV=production DATABASE_URL=$(heroku config:get DATABASE_URL) knex migrate:latest",
+    "migrate:rollback:prod": "NODE_ENV=production DATABASE_URL=$(heroku config:get DATABASE_URL) knex migrate:rollback",
     "dev": "nodemon listen.js",
     "start": "node listen.js"
   },
