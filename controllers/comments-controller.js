@@ -2,7 +2,7 @@ const connection = require('../db/connection');
 
 exports.getCommentsByArticle_id = (req, res, next) => {
   const { article_id } = req.params;
-  console.log(article_id);
+
   const { sort_by = 'created_at', order = 'desc' } = req.query;
   return (
     connection('comments')
@@ -10,7 +10,6 @@ exports.getCommentsByArticle_id = (req, res, next) => {
         'comments.comment_id',
         'comments.votes',
         'comments.created_at',
-        // 'articles.author',
         'comments.body'
       )
       // .rightJoin('articles', 'articles.article_id', '=', 'comments.article_id')

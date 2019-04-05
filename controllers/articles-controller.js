@@ -72,11 +72,8 @@ exports.patchArticleWithVotes = (req, res, next) => {
     .catch(next);
 };
 
-//not working yet
 exports.deleteArticleByArticle_id = (req, res, next) => {
-  // deleteArticle(req.params['article_id']);
   const { article_id } = req.params;
-  console.log(article_id);
   return connection('articles')
     .select('*')
     .where({ 'articles.article_id': article_id })

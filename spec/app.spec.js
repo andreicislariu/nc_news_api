@@ -41,7 +41,7 @@ describe('/', () => {
           .get('/api/topics')
           .expect(200)
           .then(({ body }) => {
-            expect(body.topics[0]).to.have.all.keys('slug', 'description');
+            expect(body.topics[0]).to.contains.keys('slug', 'description');
             expect(body.topics).to.have.length(2);
             expect(body.topics[0].slug).to.equal('mitch');
           }));
@@ -211,132 +211,6 @@ describe('/', () => {
               });
           });
       });
-
-      describe('COMMENTS', () => {
-        it('GET method returns status 200 and an array of comments with default queries', () =>
-          request
-            .get('/api/articles/1/comments')
-            .expect(200)
-            .then(res => {
-              expect(res.body.comments).to.have.length(10);
-              expect(res.body.comments[0].comment_id).to.equal(18);
-            }));
-        it('GET method returns status 404 if for a specific article there are no comments', () =>
-          request
-            .get('/api/articles/4/comments')
-            .expect(404)
-            .then(res => {
-              expect(res.body.msg).to.equal('Page not found');
-            }));
-        it('GET method returns status 400 if client enters an article_id with incorrect syntax', () =>
-          request
-            .get('/api/articles/sometext/comments')
-            .expect(400)
-            .then(res => {
-              expect(res.body.msg).to.equal('Bad request, invalid data type');
-            }));
-        it('GET method and page && limit queries responds with 200 and correct items when page and limit are specified', () =>
-          request
-            .get('/api/topics/mitch/articles?p=2&&limit=4')
-            .expect(200)
-            .then(({ body }) => {
-              expect(body.articles[0].article_id).to.equal(8);
-            }));
-
-        it('GET method returns status 400 if client enters a limit in incorrect syntax for limit value', () =>
-          request
-            .get('/api/articles/1/comments?limit=sometext')
-            .expect(400)
-            .then(res => {
-              expect(res.body.msg).to.equal('Bad request, invalid data type');
-            }));
-        it('GET method returns status 200 and applies sort_by query if client provides one', () =>
-          request
-            .get('/api/articles/1/comments?sort_by=votes')
-            .expect(200)
-            .then(res => {
-              expect(res.body.comments[0].author).to.eql('butter_bridge');
-              expect(res.body.comments[2].comment_id).to.eql(5);
-            }));
-        it('GET method returns status 400 if client enters a limit in incorrect syntax for p value', () =>
-          request
-            .get('/api/articles/1/comments?p=sometext')
-            .expect(400)
-            .then(res => {
-              expect(res.body.msg).to.equal('Bad request, invalid data type');
-            }));
-        it('GET method returns status 200 and applies multiple ordering if client provides one', () =>
-          request
-            .get(
-              '/api/articles/1/comments?sort_by=comment_id&sort_ascending=true'
-            )
-            .expect(200)
-            .then(res => {
-              expect(res.body.comments[0].comment_id).to.eql(2);
-            }));
-
-        it('POST method returns status 201 and the posted object with username and body', () => {
-          const newComment = {
-            username: 'rogersop',
-            body: 'some text heres'
-          };
-          request
-            .post('/api/articles/1/comments')
-            .send(newComment)
-            .expect(201)
-            .then(res => {
-              expect(res.body.comment.body).to.eql('some text heres');
-            });
-        });
-        it('POST method returns status 400 for malformed data entries', () => {
-          const newComment = { username: 111 };
-          request
-            .post('/api/articles/111/comments')
-            .send(newComment)
-            .expect(400)
-            .then(res => {
-              expect(res.body.msg).to.equal('Bad request, invalid data type');
-            });
-        });
-        it("POST method returns status 404 if client tries to post a comment to an article that doesn't exist", () => {
-          const newComment = { username: 'flaviu', body: 'some text here' };
-          request
-            .post('/api/articles/111/comments')
-            .send(newComment)
-            .expect(404)
-            .then(res => {
-              expect(res.body.msg).to.equal('Page not found');
-            });
-        });
-        it("POST method returns status 422 if client enters an username that doesn't exist", () => {
-          const newComment = {
-            username: 'alex',
-            body: 'some text for a new comment'
-          };
-          request
-            .post('/api/articles/1/comments')
-            .send(newComment)
-            .expect(422)
-            .then(res => {
-              expect(res.body.msg).to.equal('violates foreign key constraint');
-            });
-        });
-      });
     });
-    // describe('error handling for articles', () => {
-    //   it('returns status: 404 for a non existing id', () => {
-    //     return request.get('/api/articles/9000').expect(404);
-    //   });
-    //   it('returns status: 400 for non-number ids', () => {
-    //     return request.get('/api/articles/andrei').expect(400);
-    //   });
-    //   it('returns status: 405 for invalid method', () => {
-    //     const invalidMethod = ['post', 'patch', 'delete', 'put'];
-    //     const methodPromises = invalidMethod.map(method =>
-    //       request[method]('/api/articles/1').expect(405)
-    //     );
-    //     return Promise.all(methodPromises);
-    //   });
-    // });
   });
 });
