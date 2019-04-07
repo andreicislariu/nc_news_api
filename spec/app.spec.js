@@ -26,7 +26,23 @@ describe('/', () => {
           .get('/api')
           .expect(200)
           .then(({ body }) => {
-            expect(body.ok).to.equal(true);
+            expect(body.endpoints).to.eql({
+              topics: { address: '/api/topics', methods: ['GET'] },
+              aticles: { address: '/api/articles', methods: ['GET'] },
+              article: {
+                address: '/api/articles/:article_id',
+                methods: ['GET', 'PATCH']
+              },
+              article_comments: {
+                address: '/api/articles/:article_id/comments',
+                methods: ['GET', 'POST']
+              },
+              comments: {
+                address: '/api/comments',
+                methods: ['PATCH', 'DELETE']
+              },
+              user: { address: '/api/users/username', methods: ['GET'] }
+            });
           });
       });
     });
@@ -88,7 +104,6 @@ describe('/', () => {
             });
         });
       });
-
       describe('/:article_id', () => {
         describe('DEFAULT GET BEHAVIOUR', () => {
           it('GET status:200 returns a single article object', () => {
@@ -221,6 +236,17 @@ describe('/', () => {
         });
       });
     });
+  });
+  describe('/comments', () => {
+    it('GET method returns status 200 and an array of comments with default queries', () =>
+      request
+        .get('/api/articles/1/comments')
+        .expect(200)
+        .then(res => {
+          console.log(res);
+          expect(res.body.comments).to.have.length(10);
+          expect(res.body.comments[0].comment_id).to.equal(18);
+        }));
   });
   describe('/users', () => {
     describe('DEFAULT GET BEHAVIOUR', () => {
