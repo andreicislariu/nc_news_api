@@ -26,15 +26,12 @@ exports.postComment = (article_id, author, body) => {
 };
 
 exports.patchComment = (comment_id, inc_votes = 0) => {
-  return (
-    connection('comments')
-      // .select('*')
-      .where({ comment_id })
-      .modify(builder => {
-        if (inc_votes) builder.increment('votes', inc_votes);
-      })
-      .returning('*')
-  );
+  return connection('comments')
+    .where({ comment_id })
+    .modify(builder => {
+      if (inc_votes) builder.increment('votes', inc_votes);
+    })
+    .returning('*');
 };
 
 exports.deleteComment = comment_id => {

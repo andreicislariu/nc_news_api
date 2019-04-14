@@ -149,43 +149,20 @@ describe('/', () => {
                 expect(body.article.votes).to.equal(1);
               });
           });
-          it('PATCH status: 201 updates article data when given a specific article_id', () => {
+
+          it('PATCH method returns status 200 and an unaltered article if no data is given', () => {
             return request
               .patch('/api/articles/1')
-              .expect(201)
-              .send({ inc_votes: 10 })
-              .then(({ body }) => {
-                expect(body.article.votes).to.equal(110);
-              });
-          });
-          it('PATCH method returns status 200 and an unaltered article if no data is given', () => {
-            request
-              .patch('/api/articles/3')
               .send()
               .expect(200)
               .then(res => {
-                expect(res.body.article.votes).to.equal(0);
+                expect(res.body.article.votes).to.equal(100);
               });
           });
         });
-        describe('ERROR HANDLING', () => {
-          it('status: 404 for a non-existent id wrong file path', () => {
-            return request.patch('/api/comments/1000').expect(404);
-          });
-          it('status: 400 for a non-existent id wrong format', () => {
-            return request.patch('/api/comments/ten').expect(400);
-          });
-          it('status: 405 for an invalid method', () => {
-            const invalidMethods = ['post'];
-            const methodPromises = invalidMethods.map(method =>
-              request[method]('/api/comments/1').expect(405)
-            );
-            return Promise.all(methodPromises);
-          });
-        });
         describe('DEFAULT DELETE BEHAVIOUR', () => {
-          it('DELETE method returns status 204 and and an empty object', () =>
-            request
+          it('DELETE method returns status 204 and and an empty object', () => {
+            return request
               .delete('/api/articles/10')
               .expect(204)
               .then(res => {
@@ -194,21 +171,24 @@ describe('/', () => {
               .then(() => request.get('/api/articles/10').expect(404))
               .then(res => {
                 expect(res.body.msg).to.equal('Page not found');
-              }));
-          it('DELETE method returns status 404 if client tries to delete an article that does not exist', () =>
-            request
+              });
+          });
+          it('DELETE method returns status 404 if client tries to delete an article that does not exist', () => {
+            return request
               .delete('/api/articles/1111')
               .expect(404)
               .then(res => {
                 expect(res.body.msg).to.equal('Page not found');
-              }));
-          it('DELETE method returns status 400 if client tries to delete an article given in incorrect syntax', () =>
-            request
+              });
+          });
+          it('DELETE method returns status 400 if client tries to delete an article given in incorrect syntax', () => {
+            return request
               .delete('/api/articles/sometext')
               .expect(400)
               .then(res => {
                 expect(res.body.msg).to.equal('Bad request, invalid data type');
-              }));
+              });
+          });
         });
       });
     });
@@ -219,9 +199,8 @@ describe('/', () => {
         .get('/api/articles/1/comments')
         .expect(200)
         .then(res => {
-          console.log(res);
-          expect(res.body.comments).to.have.length(10);
-          expect(res.body.comments[0].comment_id).to.equal(18);
+          expect(res.body.comments).to.have.length(13);
+          expect(res.body.comments[0].comment_id).to.equal(2);
         }));
   });
   // describe('/users', () => {
@@ -280,12 +259,12 @@ describe('/', () => {
   describe('/users', () => {
     describe('/:user_id', () => {
       describe('DEFAULT GET BEHAVIOUR', () => {
-        it('POST status:200 returns specified user with correct keys', () => {
+        it('GET status:200 returns specified user with correct keys', () => {
           return request
             .get('/api/users/butter_bridge')
             .expect(200)
             .then(res => {
-              expect(res.body.user).to.contain.keys(
+              expect(res.body.user[0]).to.contain.keys(
                 'username',
                 'avatar_url',
                 'name'

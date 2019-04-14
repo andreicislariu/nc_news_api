@@ -10,7 +10,7 @@ exports.getAllUsers = (req, res, next) => {
 
 exports.getUser = (req, res, next) => {
   fetchUsername(req.params.username).then(user => {
-    if (user === undefined) next({ status: 404 });
+    if (user === undefined || user.length === 0) next({ status: 404 });
     else return res.status(200).send({ user });
   });
 };
