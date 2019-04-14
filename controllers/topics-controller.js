@@ -1,10 +1,9 @@
-const connection = require('../db/connection');
+const { fetchTopics } = require('../models/topics-models');
 
 exports.getAllTopics = (req, res, next) => {
-  connection('topics')
-    .select('*')
+  fetchTopics()
     .then(topics => {
-      res.status(200).send({ topics });
+      return res.status(200).send({ topics });
     })
     .catch(next);
 };

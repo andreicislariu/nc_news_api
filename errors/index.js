@@ -27,8 +27,3 @@ exports.handle422 = (err, req, res, next) => {
   if (codes[err.code]) res.status(422).send({ msg: codes[err.code] });
   else next(err);
 };
-
-exports.methodNotAllowed = (req, res) => {
-  console.log(err);
-  res.status(405).send({ msg: 'Method Not Allowed' });
-};

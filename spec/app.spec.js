@@ -104,6 +104,7 @@ describe('/', () => {
             });
         });
       });
+
       describe('/:article_id', () => {
         describe('DEFAULT GET BEHAVIOUR', () => {
           it('GET status:200 returns a single article object', () => {
@@ -111,7 +112,7 @@ describe('/', () => {
               .get('/api/articles/1')
               .expect(200)
               .then(({ body }) => {
-                expect(body.article[0]).to.eql({
+                expect(body.article).to.eql({
                   author: 'butter_bridge',
                   title: 'Living in the shadow of a great man',
                   article_id: 1,
@@ -139,59 +140,47 @@ describe('/', () => {
               }));
         });
         describe('DEFAULT PATCH BEHAVIOUR', () => {
-          it('PATCH method returns status 200 and increases votes by value passed', () =>
-            request
-              .patch('/api/articles/2')
+          it('PATCH status: 200 updates article data when given a specific article_id', () => {
+            return request
+              .patch('/api/articles/6')
+              .expect(200)
               .send({ inc_votes: 1 })
-              .expect(200)
-              .then(res => {
-                expect(res.body.article.votes).to.equal(1);
-              }));
-          it('PATCH method returns status 200 and increases votes by value passed', () =>
-            request
-              .patch('/api/articles/2')
-              .send({ inc_votes: 1 })
-              .expect(200)
-              .then(res => {
-                expect(res.body.article.votes).to.equal(1);
-              }));
-          it('PATCH method returns status 200 and upates votes even if value is negative', () => {
-            const vote = { inc_votes: -5 };
-            request
-              .patch('/api/articles/3')
-              .send(vote)
-              .expect(200)
-              .then(res => {
-                expect(res.body.article.votes).to.equal(-5);
+              .then(({ body }) => {
+                expect(body.article.votes).to.equal(1);
               });
           });
-          it('PATCH method returns status 200 and an unaltered article if no data is given', () =>
+          it('PATCH status: 201 updates article data when given a specific article_id', () => {
+            return request
+              .patch('/api/articles/1')
+              .expect(201)
+              .send({ inc_votes: 10 })
+              .then(({ body }) => {
+                expect(body.article.votes).to.equal(110);
+              });
+          });
+          it('PATCH method returns status 200 and an unaltered article if no data is given', () => {
             request
               .patch('/api/articles/3')
               .send()
               .expect(200)
               .then(res => {
                 expect(res.body.article.votes).to.equal(0);
-              }));
-          it('PATCH method returns status 400 if client tries to update votes with an incorrect data type', () => {
-            const vote = { inc_votes: 'some text' };
-            request
-              .patch('/api/articles/3')
-              .send(vote)
-              .expect(400)
-              .then(res => {
-                expect(res.body.msg).to.equal('Bad request, invalid data type');
               });
           });
-          it('PATCH method returns status 404 if client tries to update votes on non-existent article_id', () => {
-            const vote = { inc_votes: 4 };
-            request
-              .patch('/api/articles/11111')
-              .send(vote)
-              .expect(404)
-              .then(res => {
-                expect(res.body.msg).to.equal('Page not found');
-              });
+        });
+        describe('ERROR HANDLING', () => {
+          it('status: 404 for a non-existent id wrong file path', () => {
+            return request.patch('/api/comments/1000').expect(404);
+          });
+          it('status: 400 for a non-existent id wrong format', () => {
+            return request.patch('/api/comments/ten').expect(400);
+          });
+          it('status: 405 for an invalid method', () => {
+            const invalidMethods = ['post'];
+            const methodPromises = invalidMethods.map(method =>
+              request[method]('/api/comments/1').expect(405)
+            );
+            return Promise.all(methodPromises);
           });
         });
         describe('DEFAULT DELETE BEHAVIOUR', () => {
@@ -220,19 +209,6 @@ describe('/', () => {
               .then(res => {
                 expect(res.body.msg).to.equal('Bad request, invalid data type');
               }));
-          it('DELETE status:204 deletes article from article list', () => {
-            return request
-              .delete('/api/articles/1')
-              .expect(204)
-              .then(() => {
-                return request
-                  .get('/api/articles/1')
-                  .expect(404)
-                  .then(({ body: { msg } }) => {
-                    expect(msg).to.equal('Page not found');
-                  });
-              });
-          });
         });
       });
     });
@@ -248,57 +224,117 @@ describe('/', () => {
           expect(res.body.comments[0].comment_id).to.equal(18);
         }));
   });
+  // describe('/users', () => {
+  //   describe('DEFAULT GET BEHAVIOUR', () => {
+  //     it('GET method returns status 200 and an array of user objects', () =>
+  //       request
+  //         .get('/api/users')
+  //         .expect(200)
+  //         .then(res => {
+  //           expect(res.body.users).to.have.length(3);
+  //           expect(res.body.users[0].name).to.equal('jonny');
+  //           expect(res.body.users[0]).to.contain.keys([
+  //             'username',
+  //             'avatar_url',
+  //             'name'
+  //           ]);
+  //         }));
+  //   });
+  //   describe('DEFAULT PATCH BEHAVIOUR', () => {
+  //     it('PATCH method returns status 405, you should be more specific with path/endpoint', () =>
+  //       request
+  //         .patch('/api/topics')
+  //         .send({ slug: 'sddasd', description: 'eccwom' })
+  //         .expect(405)
+  //         .then(res => {
+  //           expect(res.body.msg).to.equal(
+  //             'Method not allowed, you should be more specific with path/endpoint'
+  //           );
+  //         }));
+  //   });
+  //   describe('DEFAULT DELETE BEHAVIOUR', () => {
+  //     it('DELETE method returns status 405, you should be more specific with path/endpoint', () =>
+  //       request
+  //         .delete('/api/users')
+  //         .expect(405)
+  //         .then(res => {
+  //           expect(res.body.msg).to.equal(
+  //             'Method not allowed, you should be more specific with path/endpoint'
+  //           );
+  //         }));
+  //   });
+  //   describe('username', () => {
+  //     it('GET method returns status 200 and a user object', () =>
+  //       request
+  //         .get('/api/users/rogersop')
+  //         .expect(200)
+  //         .then(res => {
+  //           expect(res.body.user[0]).to.contain.keys([
+  //             'username',
+  //             'avatar_url',
+  //             'name'
+  //           ]);
+  //         }));
+  //   });
+  // });
   describe('/users', () => {
-    describe('DEFAULT GET BEHAVIOUR', () => {
-      it('GET method returns status 200 and an array of user objects', () =>
-        request
-          .get('/api/users')
-          .expect(200)
-          .then(res => {
-            expect(res.body.users).to.have.length(3);
-            expect(res.body.users[0].name).to.equal('jonny');
-            expect(res.body.users[0]).to.contain.keys([
-              'username',
-              'avatar_url',
-              'name'
-            ]);
-          }));
-    });
-    describe('DEFAULT PATCH BEHAVIOUR', () => {
-      it('PATCH method returns status 405, you should be more specific with path/endpoint', () =>
-        request
-          .patch('/api/topics')
-          .send({ slug: 'sddasd', description: 'eccwom' })
-          .expect(405)
-          .then(res => {
-            expect(res.body.msg).to.equal(
-              'Method not allowed, you should be more specific with path/endpoint'
-            );
-          }));
-    });
-    describe('DEFAULT DELETE BEHAVIOUR', () => {
-      it('DELETE method returns status 405, you should be more specific with path/endpoint', () =>
-        request
-          .delete('/api/users')
-          .expect(405)
-          .then(res => {
-            expect(res.body.msg).to.equal(
-              'Method not allowed, you should be more specific with path/endpoint'
-            );
-          }));
-    });
-    describe('username', () => {
-      it('GET method returns status 200 and a user object', () =>
-        request
-          .get('/api/users/rogersop')
-          .expect(200)
-          .then(res => {
-            expect(res.body.user[0]).to.contain.keys([
-              'username',
-              'avatar_url',
-              'name'
-            ]);
-          }));
+    describe('/:user_id', () => {
+      describe('DEFAULT GET BEHAVIOUR', () => {
+        it('POST status:200 returns specified user with correct keys', () => {
+          return request
+            .get('/api/users/butter_bridge')
+            .expect(200)
+            .then(res => {
+              expect(res.body.user).to.contain.keys(
+                'username',
+                'avatar_url',
+                'name'
+              );
+            });
+        });
+      });
+      describe('ERRORS', () => {
+        it('GET status:404 responds with error message when ID not found', () => {
+          const methods = ['get'];
+          return Promise.all(
+            methods.map(method => {
+              return request[method]('/api/users/123')
+                .expect(404)
+                .then(res => {
+                  expect(res.body.msg).to.equal('Page not found');
+                });
+            })
+          );
+        });
+        it('status:405 responds with error message when method not allowed', () => {
+          const methods = ['delete', 'put', 'patch', 'post'];
+          return Promise.all(
+            methods.map(method => {
+              return request[method]('/api/users/1')
+                .expect(405)
+                .then(res => {
+                  expect(res.body.msg).to.equal(
+                    'Method not allowed, you should be more specific with path/endpoint'
+                  );
+                });
+            })
+          );
+        });
+        it('status:405 responds with error message when method not allowed', () => {
+          const methods = ['delete', 'put', 'patch', 'post'];
+          return Promise.all(
+            methods.map(method => {
+              return request[method]('/api')
+                .expect(405)
+                .then(res => {
+                  expect(res.body.msg).to.equal(
+                    'Method not allowed, you should be more specific with path/endpoint'
+                  );
+                });
+            })
+          );
+        });
+      });
     });
   });
 });

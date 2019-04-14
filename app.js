@@ -1,21 +1,13 @@
 const express = require('express');
 const apiRouter = require('./routes/api');
-const {
-  handle405,
-  handle404,
-  handle400,
-  handle422,
-  methodNotAllowed
-} = require('./errors');
-const bodyParser = require('body-parser');
+const { handle400, handle404, handle405, handle422 } = require('./errors');
 const app = express();
 
 app.use(express.json());
-app.use(bodyParser.json());
 
 app.use('/api', apiRouter);
 
-app.all('/*', methodNotAllowed);
+app.all('/*', handle405);
 
 app.use(handle400);
 app.use(handle404);

@@ -19,9 +19,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "body-parser": "^1.18.3",
     "express": "^4.16.4",
-    "knex": "^0.16.4-next",
+    "knex": "^0.16.4-next2",
     "pg": "^7.9.0"
   },
   "devDependencies": {
