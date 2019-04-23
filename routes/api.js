@@ -11,7 +11,7 @@ apiRouter
     res.json({
       endpoints: {
         topics: { address: '/api/topics', methods: ['GET'] },
-        aticles: { address: '/api/articles', methods: ['GET'] },
+        articles: { address: '/api/articles', methods: ['GET'] },
         article: {
           address: '/api/articles/:article_id',
           methods: ['GET', 'PATCH']
